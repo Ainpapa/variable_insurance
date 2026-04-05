@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>투자 상품별 세금 구조 | 스마트 재무의 정석</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: radial-gradient(circle at 50% -20%, #1a1f2c 0%, #0a0c10 100%);
+            color: #ffffff;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .luxury-card {
+            background: linear-gradient(145deg, rgba(30, 35, 45, 0.8), rgba(15, 18, 25, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+            border-radius: 1rem;
+        }
+
+        .text-gold-gradient {
+            background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-icon-gradient {
+            background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(232, 213, 181, 0.4));
+            display: inline-block;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="w-full px-12 py-10 flex items-center justify-between z-50">
+        <div class="flex items-center gap-2">
+            <img src="logo.png" alt="로고" class="h-11 w-auto object-contain">
+            <div class="flex items-center gap-6">
+                <span class="text-2xl font-extrabold tracking-tight">
+                    스마트 <span class="text-gold-gradient">재무의 정석</span>
+                </span>
+            </div>
+        </div>
+        <button onclick="location.href='남팀장의 AI 자산관리소.html'" class="text-gray-300 hover:text-gold-gradient transition-colors text-lg font-semibold">
+            <i class="fas fa-arrow-left mr-2"></i> 메인으로 돌아가기
+        </button>
+    </nav>
+
+    <main class="flex-grow flex flex-col items-center justify-center px-6 animate-slide-up pb-20">
+        <div class="text-center mb-16">
+            <h2 class="text-5xl md:text-6xl font-extrabold mb-4 text-gold-gradient">투자 상품별 세금 구조</h2>
+            <div class="h-1 w-32 bg-gradient-to-r from-[#c4a46a] to-[#e8d5b5] mx-auto rounded-full opacity-80 mb-6"></div>
+            <p class="text-gray-300 text-lg">수익에 따른 세금 최적화 및 절세 가이드를 제공합니다.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-7xl w-full px-10">
+            <div class="luxury-card flex flex-col items-center text-center p-14 group cursor-pointer hover:border-[#c4a46a] hover:-translate-y-2 transition-all" onclick="location.href='tax1-1.html'">
+                <i class="fas fa-coins gold-icon-gradient text-6xl mb-8 transition-transform group-hover:scale-110"></i>
+                <h3 class="text-3xl font-bold mb-5 group-hover:text-gold-gradient transition-colors leading-snug">적립식 투자<br>세금 시뮬레이션</h3>
+                <p class="text-gray-300 text-lg font-medium">매월 납입하는 적립식 투자의 세금 구조를 분석합니다.</p>
+            </div>
+
+            <div class="luxury-card flex flex-col items-center text-center p-14 group cursor-pointer hover:border-[#c4a46a] hover:-translate-y-2 transition-all" onclick="location.href='tax2-1.html'">
+                <i class="fas fa-hand-holding-usd gold-icon-gradient text-6xl mb-8 transition-transform group-hover:scale-110"></i>
+                <h3 class="text-3xl font-bold mb-5 group-hover:text-gold-gradient transition-colors leading-snug">일시납 투자<br>세금 시뮬레이션</h3>
+                <p class="text-gray-300 text-lg font-medium">목돈을 한번에 투자할 때의 세금 구조를 분석합니다.</p>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

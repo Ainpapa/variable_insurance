@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>STEP 03 | 수익 지표</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background: #0a0c10; color: #ffffff; margin: 0; height: 100vh; display: flex; }
+        .text-gold-gradient { background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .bg-gold-gradient { background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a); }
+        .gold-icon-gradient { background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(232, 213, 181, 0.4)); display: inline-block; }
+        .step-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 0.5rem; padding: 0.75rem 1rem; width: 100%; text-align: right; font-size: 1.1rem; transition: all 0.3s ease; }
+        .step-input:focus { outline: none; border-color: #c4a46a; box-shadow: 0 0 10px rgba(196, 164, 106, 0.2); }
+        .step-label { color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem; display: block; font-weight: 600; }
+        .guide-box { background: linear-gradient(145deg, rgba(30, 35, 45, 0.4), rgba(15, 18, 25, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2rem; padding: 9rem 5rem; max-width: 1200px; width: 92%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); height: 592px; overflow: hidden; position: relative; }
+    </style>
+    <script src="consultation-io.js" defer></script>
+</head>
+<body>
+    <aside class="w-[400px] border-r border-white/10 flex flex-col p-10 bg-[#11141a] relative">
+        <button onclick="location.href='dividend.html'" class="absolute top-8 right-8 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-gray-100 hover:bg-white/10 transition-all flex items-center gap-2 text-base font-bold z-10">
+            <i class="fas fa-home gold-icon-gradient"></i> 메인으로
+        </button>
+
+        <div class="space-y-8 flex-grow mt-14">
+            <section>
+                <p class="text-[11px] text-gold-gradient font-bold tracking-widest mb-2 uppercase">STEP 03</p>
+                <h3 class="text-2xl font-bold mb-10">수익 지표 설정</h3>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="step-label">연 배당률 (%)</label>
+                            <input type="text" inputmode="decimal" id="dividend-yield" class="step-input" value="9.0">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="step-label">적립식 수익률 (%)</label>
+                            <input type="text" inputmode="decimal" id="annual-return" class="step-input" value="7.0">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="step-label">수익금 합산 기준 (원)</label>
+                        <input type="text" inputmode="numeric" id="profit-threshold" class="step-input" placeholder="0" value="2,500,000" oninput="formatNumberInput(this)">
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="mt-auto pt-10 flex gap-4">
+            <button onclick="location.href='dividend1-2.html'" class="px-6 py-4 bg-white/10 text-gray-300 font-bold rounded-lg hover:bg-white/20 transition-all">이전</button>
+            <button onclick="saveAndNext()" class="flex-grow py-4 bg-gold-gradient text-black font-extrabold rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(232,213,181,0.2)]">
+                다음 단계 <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+    <main class="flex-grow flex flex-col items-center justify-center p-12 bg-[#0a0c10]">
+        <div class="guide-box text-center">
+            <div class="w-24 h-24 bg-[#161b22] rounded-full flex items-center justify-center mb-8 mx-auto border border-white/5">
+                <i class="fas fa-chart-column gold-icon-gradient text-4xl"></i>
+            </div>
+            <h2 class="text-4xl font-extrabold mb-6 tracking-tight">자산 관리 리포트</h2>
+        </div>
+    </main>
+
+    <script>
+        function formatNumberInput(el) {
+            let val = el.value.replace(/[^0-9]/g, '');
+            el.value = val ? Number(val).toLocaleString() : '';
+        }
+
+        function saveAndNext() {
+            localStorage.setItem('dividendYield', document.getElementById('dividend-yield').value);
+            localStorage.setItem('annualReturn', document.getElementById('annual-return').value);
+            localStorage.setItem('profitThreshold', document.getElementById('profit-threshold').value.replace(/,/g, '') || 0);
+            location.href = 'dividend1-4.html';
+        }
+    </script>
+</body>
+</html>

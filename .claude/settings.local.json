@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'C:\\\\Users\\\\s286a\\\\OneDrive\\\\바탕 화면\\\\남팀장의  AI 자산관리소' -type f \\\\\\(-name *.html -o -name *.js -o -name *.css \\\\\\))",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(pip install:*)",
+      "Bash(powershell -Command \"pip install PyPDF2 2>&1 | Select-Object -Last 3\")",
+      "Bash(ls \"C:\\\\Users\\\\s286a\\\\Downloads\"\"*.pdf 2>nul || dir /b \"C:Userss286aDownloads*.pdf \")",
+      "Bash(python -c \"import pdfplumber; print\\(''OK''\\)\")",
+      "Bash(where python:*)",
+      "Bash(echo $SHELL)",
+      "Bash(cmd /c \"python -c \"\"import pdfplumber; print\\(''OK''\\)\"\"\")",
+      "Bash(ls /c/Users/s286a/Downloads/*.pdf)",
+      "Bash(python extract_pdf.py)",
+      "Bash(python \"C:/Users/s286a/OneDrive/바탕 화면/남팀장의  AI 자산관리소/extract_pdf.py\")",
+      "WebSearch",
+      "WebFetch(domain:www.cardif.co.kr)",
+      "WebFetch(domain:pub.insure.or.kr)",
+      "WebFetch(domain:dis.kofia.or.kr)",
+      "WebFetch(domain:openapi.kofia.or.kr)",
+      "WebFetch(domain:fund.kofia.or.kr)"
+    ]
+  }
+}

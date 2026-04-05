@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>일시납 세금 시뮬레이션 | STEP 01</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background: #0a0c10; color: #ffffff; margin: 0; height: 100vh; display: flex; }
+        .text-gold-gradient { background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .bg-gold-gradient { background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a); }
+        .gold-icon-gradient { background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(232, 213, 181, 0.4)); display: inline-block; }
+        .step-label { color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem; display: block; font-weight: 600; }
+        .step-input { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 0.5rem; padding: 0.75rem 1rem; width: 100%; text-align: right; font-size: 1.25rem; font-weight: 800; transition: all 0.3s ease; appearance: none; -moz-appearance: textfield; }
+        .step-input:focus { outline: none; border-color: #c4a46a; box-shadow: 0 0 10px rgba(196, 164, 106, 0.2); }
+        .step-input::placeholder { color: rgba(255, 255, 255, 0.2); }
+        .guide-box { background: linear-gradient(145deg, rgba(30, 35, 45, 0.4), rgba(15, 18, 25, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2rem; padding: 9rem 5rem; max-width: 1200px; width: 92%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); height: 592px; overflow: hidden; position: relative; }
+    </style>
+    <script src="consultation-io.js" defer></script>
+</head>
+<body>
+    <aside class="w-[400px] border-r border-white/10 flex flex-col p-10 bg-[#11141a] relative shrink-0">
+        <button onclick="location.href='tax.html'" class="absolute top-8 right-8 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-gray-100 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all flex items-center gap-2 text-base font-bold z-10 shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
+            <i class="fas fa-home gold-icon-gradient"></i> 메인으로
+        </button>
+
+        <div class="space-y-8 flex-grow mt-14">
+            <section>
+                <p class="text-[11px] text-gold-gradient font-bold tracking-widest mb-2 uppercase">STEP 01</p>
+                <h3 class="text-2xl font-bold mb-10">일시납 투자 정보</h3>
+                <div class="space-y-6">
+                    <div>
+                        <label class="step-label">투자 원금 (원)</label>
+                        <input type="text" inputmode="numeric" id="input-principal" class="step-input" placeholder="0"
+                               onfocus="if(this.value === '0') this.value='';"
+                               onblur="if(this.value === '') this.value='';"
+                               oninput="formatNumberInput(this)" autofocus>
+                    </div>
+                    <div>
+                        <label class="step-label">투자 기간 (년)</label>
+                        <input type="text" inputmode="numeric" id="input-years" class="step-input" placeholder="10"
+                               oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    </div>
+                    <div>
+                        <label class="step-label">예상 연수익률 (%)</label>
+                        <input type="text" inputmode="decimal" id="input-rate" class="step-input" placeholder="5"
+                               oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="mt-auto pt-10">
+            <button onclick="calculateTax()" class="w-full py-4 bg-gold-gradient text-black font-extrabold rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(232,213,181,0.2)]">
+                세금 계산하기 <i class="fas fa-calculator"></i>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-grow flex flex-col items-center justify-center p-12 bg-[#0a0c10]">
+        <div id="result-placeholder" class="guide-box text-center">
+            <div class="w-24 h-24 bg-[#161b22] rounded-full flex items-center justify-center mb-8 mx-auto shadow-[0_0_30px_rgba(0,0,0,0.8)] border border-white/5">
+                <i class="fas fa-hand-holding-usd gold-icon-gradient text-4xl"></i>
+            </div>
+            <h2 class="text-4xl font-extrabold mb-6 tracking-tight text-center">일시납 투자 세금 시뮬레이션</h2>
+            <p class="text-gray-400 text-lg text-center leading-relaxed font-light">투자 정보를 입력하고 세금 계산하기를 클릭하세요.<br>상품별 세금 구조를 비교 분석해 드립니다.</p>
+        </div>
+        <div id="result-area" class="hidden w-full max-w-3xl"></div>
+    </main>
+
+    <script>
+        function formatNumberInput(element) {
+            let numString = element.value.replace(/[^0-9]/g, '');
+            if (numString.length > 1 && numString.charAt(0) === '0') numString = numString.replace(/^0+/, '');
+            if (numString === '') { element.value = ''; return; }
+            element.value = numString.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        function calculateTax() {
+            const principal = parseInt((document.getElementById('input-principal').value || '0').replace(/[^0-9]/g, ''));
+            const years = parseInt(document.getElementById('input-years').value || '0');
+            const rate = parseFloat(document.getElementById('input-rate').value || '0');
+
+            if (!principal || !years || !rate) return alert('모든 항목을 입력해 주세요.');
+
+            const annualRate = rate / 100;
+            const futureValue = principal * Math.pow(1 + annualRate, years);
+            const totalProfit = futureValue - principal;
+
+            // 세금 계산
+            const taxRate1554 = 0.154;
+            const taxISA = 0.099;
+            const isaNonTaxable = 2000000;
+
+            const tax1554 = totalProfit * taxRate1554;
+            const isaProfit = Math.max(totalProfit - isaNonTaxable, 0);
+            const taxISAAmount = isaProfit * taxISA;
+
+            const fmt = (n) => Math.round(n).toLocaleString();
+
+            document.getElementById('result-placeholder').classList.add('hidden');
+            const resultArea = document.getElementById('result-area');
+            resultArea.classList.remove('hidden');
+            resultArea.innerHTML = `
+                <h2 class="text-3xl font-extrabold mb-8 text-center text-gold-gradient">세금 비교 분석 결과</h2>
+                <div class="grid grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                        <p class="text-gray-400 text-sm mb-2">투자 원금</p>
+                        <p class="text-2xl font-bold">${fmt(principal)}원</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                        <p class="text-gray-400 text-sm mb-2">예상 총 자산</p>
+                        <p class="text-2xl font-bold text-gold-gradient">${fmt(futureValue)}원</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                        <p class="text-gray-400 text-sm mb-2">총 수익</p>
+                        <p class="text-2xl font-bold text-green-400">${fmt(totalProfit)}원</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                        <p class="text-gray-400 text-sm mb-2">투자 기간</p>
+                        <p class="text-2xl font-bold">${years}년</p>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold mb-4">상품별 세금 비교</h3>
+                <div class="space-y-4">
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-lg">일반 과세 (15.4%)</p>
+                            <p class="text-gray-400 text-sm">이자·배당소득세 14% + 지방소득세 1.4%</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-red-400 font-bold text-xl">-${fmt(tax1554)}원</p>
+                            <p class="text-gray-400 text-sm">실수령: ${fmt(futureValue - tax1554)}원</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-lg">ISA (9.9%)</p>
+                            <p class="text-gray-400 text-sm">200만원 비과세 + 초과분 9.9% 분리과세</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-yellow-400 font-bold text-xl">-${fmt(taxISAAmount)}원</p>
+                            <p class="text-gray-400 text-sm">실수령: ${fmt(futureValue - taxISAAmount)}원</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-[#c4a46a]/30 rounded-xl p-6 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-lg text-gold-gradient">연금저축 / IRP</p>
+                            <p class="text-gray-400 text-sm">수령 시 연금소득세 3.3~5.5% (세액공제 혜택)</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-green-400 font-bold text-xl">-${fmt(totalProfit * 0.038)}원</p>
+                            <p class="text-gray-400 text-sm">실수령: ${fmt(futureValue - totalProfit * 0.038)}원</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-lg">비과세 해외주식형 펀드</p>
+                            <p class="text-gray-400 text-sm">해외주식 매매차익 비과세 (배당은 과세)</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-green-300 font-bold text-xl">0원</p>
+                            <p class="text-gray-400 text-sm">실수령: ${fmt(futureValue)}원</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-[#c4a46a]/10 border border-[#c4a46a]/20 rounded-xl">
+                    <p class="text-sm text-gray-300"><i class="fas fa-info-circle text-[#c4a46a] mr-2"></i>ISA 대비 일반과세 추가 부담: <strong class="text-white">${fmt(tax1554 - taxISAAmount)}원</strong></p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

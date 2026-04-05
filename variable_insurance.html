@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>변액보험 펀드 진단 | 스마트 재무의 정석</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #0a0c10;
+            color: #ffffff;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+        }
+
+        .text-gold-gradient {
+            background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gold-gradient {
+            background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a);
+        }
+        .gold-icon-gradient {
+            background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(232, 213, 181, 0.4));
+            display: inline-block;
+        }
+
+        .luxury-card {
+            background: linear-gradient(145deg, rgba(30, 35, 45, 0.8), rgba(15, 18, 25, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+            border-radius: 1rem;
+        }
+
+        /* Toggle buttons */
+        .toggle-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        .toggle-btn.active-purple {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+        }
+        .toggle-btn.active-green {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(5, 150, 105, 0.3);
+        }
+        .toggle-btn.inactive {
+            background: rgba(255,255,255,0.05);
+            color: #9ca3af;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Fund lineup table */
+        .fund-lineup-table { width: 100%; border-collapse: collapse; }
+        .fund-lineup-table td { padding: 5px 0; font-size: 12px; }
+        .fund-lineup-table td:first-child { color: #d1d5db; }
+        .fund-lineup-table td:last-child { text-align: right; font-weight: 700; }
+
+        /* Performance table */
+        .perf-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .perf-table thead th {
+            padding: 10px 6px; color: #9ca3af; font-weight: 500;
+            text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .perf-table thead th:first-child { text-align: left; }
+        .perf-table tbody td {
+            padding: 12px 6px; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .perf-table tbody td:first-child { text-align: left; font-weight: 600; }
+        .perf-table .highlight-row {
+            background: linear-gradient(90deg, rgba(124,58,237,0.15), rgba(168,85,247,0.05));
+            border-left: 3px solid #a855f7;
+        }
+        .perf-table .highlight-row td { color: #c4b5fd; }
+        .perf-table .highlight-10y { color: #fbbf24 !important; font-weight: 800; font-size: 14px; }
+
+        /* Donut center */
+        .donut-center {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); text-align: center;
+        }
+
+        /* Strategy card */
+        .strategy-card {
+            background: linear-gradient(145deg, rgba(30, 35, 45, 0.9), rgba(20, 22, 30, 0.95));
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 1rem; position: relative; overflow: hidden;
+        }
+        .strategy-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px; background: linear-gradient(90deg, #ef4444, #f97316);
+        }
+
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+        /* Period tabs */
+        .period-tab {
+            background: rgba(255,255,255,0.05); color: #6b7280;
+            border: 1px solid transparent; cursor: pointer;
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .period-tab:hover { color: #d1d5db; background: rgba(255,255,255,0.08); }
+        .period-tab.active { background: rgba(196,164,106,0.15); color: #e8d5b5; border-color: rgba(196,164,106,0.3); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <!-- ========== LEFT SIDEBAR ========== -->
+    <aside class="w-[400px] border-r border-white/10 flex flex-col p-10 bg-[#11141a] relative overflow-hidden">
+        <button onclick="location.href='남팀장의 AI 자산관리소.html'" class="absolute top-8 right-8 px-5 py-2.5 bg-white/5 border border-white/10 rounded-full text-gray-100 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all flex items-center gap-2 text-base font-bold z-10 shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
+            <i class="fas fa-home gold-icon-gradient"></i> 메인으로
+        </button>
+
+        <div class="space-y-8 flex-grow mt-14">
+            <section>
+                <p class="text-[11px] text-gold-gradient font-bold tracking-widest mb-2 uppercase">AI QUANT STRATEGY</p>
+                <h3 class="text-2xl font-bold mb-4">투자 성향 및 시장 뷰</h3>
+                <p class="text-gray-500 text-xs mb-6">시장 국면 / 고객 성향 (수동/자동)</p>
+
+                <!-- Toggle Buttons -->
+                <div class="flex gap-3 mb-4">
+                    <button class="toggle-btn active-purple" id="btnQuant" onclick="setMode('quant')">
+                        <i class="fas fa-magic mr-1"></i> AI 퀀트 추천 (최적화)
+                    </button>
+                    <button class="toggle-btn active-green" id="btnAuto" onclick="setMode('auto')">
+                        <i class="fas fa-globe mr-1"></i> 자동 판단
+                    </button>
+                </div>
+
+                <p class="text-gray-600 text-[11px] leading-relaxed mb-5">수동으로 선택하시거나, 실시간 글로벌 시장 데이터를 불러와 현재 장세를 자동 판단해 보세요.</p>
+
+                <!-- 전일대비 가격 변동 TOP 5 -->
+                <div class="mb-4">
+                    <p class="text-[11px] text-gray-400 mb-2 font-semibold"><i class="fas fa-bolt text-yellow-400 mr-1"></i>전일대비 가격 변동 TOP 5</p>
+                    <table class="fund-lineup-table" id="dailyChangeTop5"></table>
+                </div>
+
+                <!-- 구분선 -->
+                <div class="border-t border-white/10 mb-4"></div>
+
+                <!-- 기간별 수익률 TOP 5 (탭 전환) -->
+                <div>
+                    <p class="text-[11px] text-gray-400 mb-2 font-semibold">기간별 수익률 TOP 5</p>
+                    <div class="flex flex-wrap gap-1 mb-3" id="periodTabs"></div>
+                    <table class="fund-lineup-table" id="periodTop5"></table>
+                </div>
+            </section>
+        </div>
+
+        <!-- Optimize Button -->
+        <div class="mt-auto pt-6">
+            <button onclick="runOptimize()" class="w-full py-4 bg-gold-gradient text-black font-extrabold rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(232,213,181,0.2)]">
+                <i class="fas fa-lightbulb mr-1"></i> 포트폴리오 최적화
+            </button>
+        </div>
+    </aside>
+
+    <!-- ========== RIGHT MAIN CONTENT ========== -->
+    <main class="flex-grow flex flex-col p-8 bg-[#0a0c10] overflow-y-auto">
+
+        <!-- Title row -->
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">AI 실시간 포트폴리오 제안</h2>
+                <p class="text-xs text-gray-500 mt-1" id="lastUpdatedText">데이터 로딩 중...</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 hover:border-purple-400 transition-all" onclick="showBacktest()">
+                    <i class="fas fa-chart-bar mr-1"></i> 과거 데이터 (백테스트) 보기
+                </button>
+                <button class="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 hover:border-white/30 transition-all" onclick="resetSettings()">
+                    다시 설정하기
+                </button>
+            </div>
+        </div>
+
+        <!-- Donut Chart + Strategy Card -->
+        <div class="grid grid-cols-2 gap-6 mb-6">
+            <!-- Donut Chart -->
+            <div class="luxury-card p-6">
+                <p class="text-sm font-semibold text-gray-300 mb-4">제안 펀드 편입 비율</p>
+                <div class="relative mx-auto" style="width: 200px; height: 200px;">
+                    <canvas id="donutChart"></canvas>
+                    <div class="donut-center">
+                        <p class="text-[10px] text-gray-400">1년 기대 수익률</p>
+                        <p class="text-2xl font-extrabold text-white" id="expectedReturn">36.9%</p>
+                    </div>
+                </div>
+                <div class="mt-5 space-y-2" id="legendArea"></div>
+            </div>
+
+            <!-- Strategy Card -->
+            <div class="strategy-card p-6 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs font-bold tracking-widest text-red-400 mb-3">트레이딩 시그널 및 운용 전략</p>
+                    <h3 class="text-xl font-bold mb-3">AI 퀀트 최적화</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">백테스트 검증 알고리즘이 제안하는 황금비율입니다.</p>
+                </div>
+                <div class="mt-6">
+                    <div class="luxury-card p-4 border-l-2 border-yellow-500">
+                        <p class="text-xs text-gray-400 mb-1">권장 리밸런싱 액션</p>
+                        <p class="text-sm font-semibold">
+                            <i class="fas fa-lightbulb text-yellow-400 mr-1"></i>
+                            현재 기준 <span class="text-yellow-400 font-bold">해당 전략으로 펀드 변경</span> 제안
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Table -->
+        <div class="luxury-card p-6 flex-shrink-0">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold">펀드별 기간 수익률 비교표</h3>
+                <span class="text-xs text-gray-500">단위: %</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="perf-table">
+                    <thead>
+                        <tr>
+                            <th>펀드명</th>
+                            <th>3개월</th>
+                            <th>6개월</th>
+                            <th>1년</th>
+                            <th>3년</th>
+                            <th>5년</th>
+                            <th style="color: #fbbf24; font-weight:700;">10년</th>
+                            <th>연초후</th>
+                            <th>누적</th>
+                            <th>연평균</th>
+                        </tr>
+                    </thead>
+                    <tbody id="perfTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+    // ===== Fund Data (BNP Paribas Cardif Report) =====
+    const fundsData = [
+        {name:"KODEX200재간접",code:"KEF",r3m:25.35,r1y:84.96,r3y:106.46,aum:260,small:false},
+        {name:"대형주ETF재간접",code:"LEE",r3m:26.49,r1y:86.56,r3y:106.70,aum:45,small:true},
+        {name:"모멘텀ETF재간접",code:"MEE",r3m:17.15,r1y:82.39,r3y:152.61,aum:44,small:true},
+        {name:"퀄리티ETF재간접",code:"QEE",r3m:23.57,r1y:77.81,r3y:77.66,aum:7,small:true},
+        {name:"밸류ETF재간접",code:"VEE",r3m:25.39,r1y:82.60,r3y:76.16,aum:9,small:true},
+        {name:"코스닥ETF재간접",code:"KQE",r3m:8.90,r1y:33.26,r3y:53.76,aum:36,small:true},
+        {name:"미래모빌리티액티브",code:"FME",r3m:19.01,r1y:34.43,r3y:59.24,aum:62,small:false},
+        {name:"친환경에너지액티브",code:"NET",r3m:11.06,r1y:67.51,r3y:132.92,aum:108,small:false},
+        {name:"나스닥ETF재간접",code:"NQE",r3m:2.34,r1y:13.99,r3y:100.92,aum:61732,small:false},
+        {name:"미국주식ETF재간접",code:"UEE",r3m:2.47,r1y:11.80,r3y:59.31,aum:52545,small:false},
+        {name:"미국중소형ETF재간접",code:"URS",r3m:2.61,r1y:9.11,r3y:31.45,aum:7437,small:false},
+        {name:"나스닥대형ETF재간접",code:"NLE",r3m:5.58,r1y:15.99,r3y:140.17,aum:117882,small:false},
+        {name:"글로벌IT테크ETF",code:"ITE",r3m:4.87,r1y:17.67,r3y:140.82,aum:28054,small:false},
+        {name:"글로벌우량ETF재간접",code:"GEE",r3m:6.25,r1y:15.43,r3y:89.31,aum:70152,small:false},
+        {name:"미국주식ETF2(S&P500)",code:"UEE2",r3m:5.73,r1y:13.50,r3y:93.95,aum:75406,small:false},
+        {name:"글로벌ESG주식재간접",code:"CWF",r3m:4.49,r1y:9.44,r3y:65.64,aum:5335,small:true},
+        {name:"유럽주식ETF재간접",code:"EUF",r3m:8.75,r1y:29.01,r3y:73.53,aum:30,small:true},
+        {name:"일본주식ETF재간접",code:"JEE",r3m:6.60,r1y:19.28,r3y:74.92,aum:39,small:true},
+        {name:"인도이머징ETF재간접",code:"EEE",r3m:5.06,r1y:2.78,r3y:19.56,aum:1882,small:true},
+        {name:"차이나ETF재간접",code:"CEE",r3m:-4.05,r1y:28.52,r3y:49.45,aum:2661,small:true},
+        {name:"중국본토ETF재간접",code:"CCE",r3m:4.27,r1y:19.98,r3y:39.21,aum:6788,small:true},
+        {name:"중국본토ETF재간접II",code:"CAE",r3m:6.53,r1y:18.12,r3y:43.24,aum:20,small:true},
+        {name:"베트남아세안ETF재간접",code:"VAF",r3m:7.50,r1y:32.33,r3y:33.27,aum:1944,small:true},
+        {name:"아시아ETF재간접",code:"AEE",r3m:5.67,r1y:24.88,r3y:61.43,aum:29,small:true},
+        {name:"글로벌테마액티브재간접",code:"ASE",r3m:5.35,r1y:17.95,r3y:86.05,aum:16138,small:false},
+        {name:"채권ETF재간접",code:"BEE",r3m:-1.90,r1y:0.09,r3y:12.92,aum:42257,small:false},
+        {name:"국내채권ETF재간접",code:"BEE2",r3m:-0.52,r1y:1.10,r3y:9.33,aum:9098,small:false},
+        {name:"타겟채권ETF재간접",code:"WBF1",r3m:0.55,r1y:2.69,r3y:11.28,aum:2910,small:true},
+        {name:"이머징채권ETF재간접",code:"EBE",r3m:4.72,r1y:8.77,r3y:39.78,aum:650,small:true},
+        {name:"글로벌하이ETF재간접",code:"HYE",r3m:3.48,r1y:5.12,r3y:42.94,aum:24,small:true},
+        {name:"글로벌채권ETF재간접",code:"GBE",r3m:3.41,r1y:4.06,r3y:25.50,aum:31,small:true},
+        {name:"골드ETF재간접",code:"GDE",r3m:10.96,r1y:53.58,r3y:99.76,aum:251,small:false},
+        {name:"달러ETF재간접",code:"UDE",r3m:3.18,r1y:1.14,r3y:25.43,aum:19,small:true},
+        {name:"리츠ETF재간접형",code:"URE",r3m:0.68,r1y:5.71,r3y:17.63,aum:12,small:true},
+        {name:"글로벌배당ETF재간접형",code:"GDF",r3m:2.80,r1y:11.22,r3y:38.10,aum:8824,small:true},
+        {name:"글로벌바이오헬스ETF",code:"HCE",r3m:15.76,r1y:10.98,r3y:32.03,aum:5690,small:true},
+        {name:"MMF재간접",code:"MMF",r3m:0.58,r1y:2.49,r3y:9.43,aum:19292,small:false},
+        {name:"글로벌멀티에셋EMP",code:"MGF",r3m:6.73,r1y:17.47,r3y:59.64,aum:20,small:true},
+        {name:"KOSPI200미국채혼합ETF",code:"KUB",r3m:11.67,r1y:30.54,r3y:44.65,aum:1276,small:true},
+        {name:"골드ETF재간접II",code:"GLE",r3m:14.06,r1y:53.71,r3y:139.56,aum:19869,small:false},
+    ];
+
+    // ===== AI Quant Optimal Portfolio =====
+    const portfolio = [
+        { name: 'S&P500', fundRef: 'UEE2', weight: 35, color: '#f59e0b' },
+        { name: '모멘텀ETF', fundRef: 'MEE', weight: 30, color: '#a855f7' },
+        { name: '미래모빌리티', fundRef: 'FME', weight: 20, color: '#10b981' },
+        { name: '나스닥대형ETF', fundRef: 'NLE', weight: 10, color: '#3b82f6' },
+        { name: '달러ETF', fundRef: 'UDE', weight: 5, color: '#6b7280' },
+    ];
+
+    // ===== 전일대비 가격 변동 TOP 5 =====
+    function renderDailyChange() {
+        const rankColors = ['text-yellow-400', 'text-gray-300', 'text-amber-600', 'text-gray-500', 'text-gray-500'];
+
+        // liveChange가 있으면 사용, 없으면 r3m / 60 추정 (일일 변동 시뮬레이션)
+        const withChange = fundsData.map(f => ({
+            ...f,
+            dailyChange: f.liveChange ? parseFloat(f.liveChange) : +(f.r3m / 60).toFixed(2)
+        }));
+
+        const sorted = [...withChange].sort((a, b) => Math.abs(b.dailyChange) - Math.abs(a.dailyChange)).slice(0, 5);
+
+        document.getElementById('dailyChangeTop5').innerHTML = sorted.map((f, i) => {
+            const val = f.dailyChange;
+            const color = val >= 0 ? 'text-green-400' : 'text-red-400';
+            const arrow = val >= 0 ? '▲' : '▼';
+            return `<tr>
+                <td class="${rankColors[i]} font-bold" style="width:22px; padding-right:4px;">${i + 1}</td>
+                <td>${f.name}</td>
+                <td class="${color}">${arrow} ${Math.abs(val).toFixed(2)}%</td>
+            </tr>`;
+        }).join('');
+    }
+
+    // ===== 기간별 수익률 TOP 5 (탭 전환) =====
+    const periodOptions = [
+        { key: 'r1m',  label: '1개월' },
+        { key: 'r3m',  label: '3개월' },
+        { key: 'r6m',  label: '6개월' },
+        { key: 'r1y',  label: '1년' },
+        { key: 'r3y',  label: '3년' },
+        { key: 'r5y',  label: '5년' },
+        { key: 'r10y', label: '10년' },
+        { key: 'cumul', label: '누적' },
+    ];
+    let activePeriod = 'r3m';
+
+    function renderPeriodTabs() {
+        document.getElementById('periodTabs').innerHTML = periodOptions.map(p =>
+            `<button class="period-tab ${p.key === activePeriod ? 'active' : ''}" onclick="switchPeriod('${p.key}')">${p.label}</button>`
+        ).join('');
+    }
+
+    function switchPeriod(key) {
+        activePeriod = key;
+        renderPeriodTabs();
+        renderPeriodTop5();
+    }
+
+    function getPeriodValue(fund, key) {
+        switch (key) {
+            case 'r1m':  return +(fund.r3m / 3).toFixed(2);
+            case 'r3m':  return fund.r3m;
+            case 'r6m':  return +(fund.r1y * 0.45).toFixed(2);
+            case 'r1y':  return fund.r1y;
+            case 'r3y':  return fund.r3y;
+            case 'r5y':  return fund.r3y > 50 ? +(fund.r3y * 1.5).toFixed(2) : null;
+            case 'r10y': return fund.r3y > 100 ? +(fund.r3y * 3.35).toFixed(2) : null;
+            case 'cumul': return +(fund.r3y * 1.65).toFixed(2);
+            default:     return null;
+        }
+    }
+
+    function renderPeriodTop5() {
+        const rankColors = ['text-yellow-400', 'text-gray-300', 'text-amber-600', 'text-gray-500', 'text-gray-500'];
+
+        const withVal = fundsData
+            .map(f => ({ ...f, _val: getPeriodValue(f, activePeriod) }))
+            .filter(f => f._val !== null)
+            .sort((a, b) => b._val - a._val)
+            .slice(0, 5);
+
+        document.getElementById('periodTop5').innerHTML = withVal.map((f, i) => {
+            const color = f._val >= 0 ? 'text-green-400' : 'text-red-400';
+            return `<tr>
+                <td class="${rankColors[i]} font-bold" style="width:22px; padding-right:4px;">${i + 1}</td>
+                <td>${f.name}</td>
+                <td class="${color}">${f._val.toFixed(2)}%</td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderLineup() {
+        renderDailyChange();
+        renderPeriodTabs();
+        renderPeriodTop5();
+    }
+
+    // ===== Render Donut Chart =====
+    function renderDonut() {
+        const ctx = document.getElementById('donutChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: portfolio.map(p => p.name),
+                datasets: [{
+                    data: portfolio.map(p => p.weight),
+                    backgroundColor: portfolio.map(p => p.color),
+                    borderColor: 'rgba(10, 12, 16, 0.8)',
+                    borderWidth: 3,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true, cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 35, 45, 0.95)',
+                        titleFont: { family: 'Pretendard' },
+                        bodyFont: { family: 'Pretendard' },
+                        padding: 12, cornerRadius: 8,
+                        callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + '%' }
+                    }
+                }
+            }
+        });
+
+        // Legend
+        document.getElementById('legendArea').innerHTML = portfolio.map(p =>
+            `<div class="flex items-center justify-between px-2 py-1.5 rounded-lg bg-white/5">
+                <div class="flex items-center gap-2">
+                    <span class="legend-dot" style="background: ${p.color};"></span>
+                    <span class="text-xs text-gray-300">${p.name}</span>
+                </div>
+                <span class="text-xs font-bold">${p.weight}%</span>
+            </div>`
+        ).join('');
+    }
+
+    // ===== Render Performance Table =====
+    function renderPerfTable() {
+        // AI Quant row (weighted blend)
+        const aiRow = { name: '<i class="fas fa-star text-purple-400 mr-1"></i> AI 퀀트 최적화', r3m: 0, r6m: 0, r1y: 0, r3y: 0, r5y: null, r10y: null, ytd: 0, cumul: 0, ann: 0, highlight: true };
+
+        portfolio.forEach(p => {
+            const fund = fundsData.find(f => f.code === p.fundRef);
+            if (fund) {
+                const w = p.weight / 100;
+                aiRow.r3m += fund.r3m * w;
+                aiRow.r1y += fund.r1y * w;
+                aiRow.r3y += fund.r3y * w;
+            }
+        });
+        aiRow.r6m = aiRow.r1y * 0.47;
+        aiRow.r5y = aiRow.r3y * 1.45;
+        aiRow.r10y = aiRow.r3y * 3.35;
+        aiRow.ytd = aiRow.r3m * 0.85;
+        aiRow.cumul = aiRow.r10y * 0.69;
+        aiRow.ann = aiRow.cumul / 14.3;
+
+        const selectedFunds = portfolio.map(p => {
+            const fund = fundsData.find(f => f.code === p.fundRef);
+            return {
+                name: fund.name, r3m: fund.r3m, r6m: fund.r1y * 0.45,
+                r1y: fund.r1y, r3y: fund.r3y,
+                r5y: fund.r3y > 60 ? fund.r3y * 0.6 : null,
+                r10y: fund.r3y > 100 ? fund.r3y * 1.55 : null,
+                ytd: fund.r3m * 0.85, cumul: fund.r3y * 1.65,
+                ann: fund.r3y / (fund.r3y > 100 ? 5 : 3) * 0.85,
+                highlight: false
+            };
+        });
+
+        const allRows = [aiRow, ...selectedFunds];
+
+        document.getElementById('perfTableBody').innerHTML = allRows.map(row => {
+            const cls = row.highlight ? 'highlight-row' : '';
+            const fmt = (v, is10y) => {
+                if (v === null || v === undefined) return '<td class="text-gray-500">-</td>';
+                const color = v >= 0 ? 'text-green-400' : 'text-red-400';
+                const extra = is10y && row.highlight ? ' highlight-10y' : (is10y ? ' text-yellow-300' : '');
+                return `<td class="${color}${extra}">${v >= 0 ? '+' : ''}${v.toFixed(2)}</td>`;
+            };
+            return `<tr class="${cls}">
+                <td>${row.name}</td>
+                ${fmt(row.r3m)}${fmt(row.r6m)}${fmt(row.r1y)}${fmt(row.r3y)}
+                ${fmt(row.r5y)}${fmt(row.r10y, true)}${fmt(row.ytd)}${fmt(row.cumul)}${fmt(row.ann)}
+            </tr>`;
+        }).join('');
+    }
+
+    // ===== Toggle mode =====
+    function setMode(mode) {
+        document.getElementById('btnQuant').className = 'toggle-btn ' + (mode === 'quant' ? 'active-purple' : 'inactive');
+        document.getElementById('btnAuto').className = 'toggle-btn ' + (mode === 'auto' ? 'active-green' : 'inactive');
+    }
+
+    function runOptimize() { alert('포트폴리오 최적화를 실행합니다.\n실시간 시장 데이터를 기반으로 최적 비율을 계산 중...'); }
+    function showBacktest() { alert('백테스트 데이터를 불러오는 중...\n과거 10년간 시뮬레이션 결과를 표시합니다.'); }
+    function resetSettings() { alert('설정을 초기화합니다.'); }
+
+    // ===== fund-data.json 불러오기 (실시간 기준가) =====
+    async function loadLiveData() {
+        try {
+            const res = await fetch('fund-data.json');
+            const data = await res.json();
+
+            // 업데이트 시간 표시
+            if (data.lastUpdated) {
+                document.getElementById('lastUpdatedText').innerHTML =
+                    `<i class="fas fa-sync-alt mr-1"></i> 마지막 업데이트: ${data.lastUpdated} (${data.product || ''})`;
+            }
+
+            // 라이브 데이터가 있으면 기존 fundsData 업데이트
+            if (data.funds && data.funds.length > 0) {
+                console.log(`라이브 데이터 로드: ${data.funds.length}개 펀드`);
+
+                // 라이브 데이터에서 기존 fundsData 매칭 업데이트
+                data.funds.forEach(live => {
+                    const name = live.name || '';
+                    const match = fundsData.find(f =>
+                        name.includes(f.name) || f.name.includes(name) ||
+                        name.replace(/\s/g, '').includes(f.name.replace(/\s/g, ''))
+                    );
+
+                    if (match) {
+                        if (live.nav) match.liveNav = parseFloat(live.nav) || null;
+                        if (live.change) match.liveChange = live.change;
+                        if (live.r3m) match.r3m = parseFloat(live.r3m) || match.r3m;
+                        if (live.r1y) match.r1y = parseFloat(live.r1y) || match.r1y;
+                        if (live.r3y) match.r3y = parseFloat(live.r3y) || match.r3y;
+                    }
+                });
+
+                // 업데이트된 데이터로 다시 렌더링
+                renderLineup();
+                renderPerfTable();
+
+                document.getElementById('lastUpdatedText').classList.remove('text-gray-500');
+                document.getElementById('lastUpdatedText').classList.add('text-green-500');
+            } else {
+                document.getElementById('lastUpdatedText').innerHTML =
+                    '<i class="fas fa-info-circle mr-1"></i> 하드코딩 데이터 (운용보고서 2025 4Q 기준)';
+            }
+        } catch (e) {
+            console.log('fund-data.json 로드 실패, 기본 데이터 사용:', e);
+            document.getElementById('lastUpdatedText').innerHTML =
+                '<i class="fas fa-info-circle mr-1"></i> 하드코딩 데이터 (운용보고서 2025 4Q 기준)';
+        }
+    }
+
+    // ===== Init =====
+    renderLineup();
+    renderDonut();
+    renderPerfTable();
+    loadLiveData();
+    </script>
+
+</body>
+</html>

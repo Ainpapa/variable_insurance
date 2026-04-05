@@ -1,0 +1,56 @@
+name: 변액보험 펀드 기준가 스크래핑
+
+on:
+  # 매일 한국시간 오후 6시 30분 (UTC 09:30) 자동 실행
+  # 종가 확정 후 기준가 공시 시간 고려
+  schedule:
+    - cron: '30 9 * * 1-5'  # 월~금만
+
+  # 수동 실행 가능
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Python 설치
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. 의존성 설치
+      - name: Install dependencies
+        run: |
+          pip install -r scraper/requirements.txt
+          playwright install chromium
+          playwright install-deps
+
+      # 4. 스크래핑 실행
+      - name: Run scraper
+        run: python scraper/scrape_funds.py
+
+      # 5. 디버깅 스크린샷 업로드 (실패 시 확인용)
+      - name: Upload debug screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: scraper/*.png
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # 6. 변경사항 커밋 & 푸시
+      - name: Commit and push fund data
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add fund-data.json
+          # 변경사항이 있을 때만 커밋
+          git diff --staged --quiet || git commit -m "자동 업데이트: 펀드 기준가 $(date +'%Y-%m-%d')"
+          git push

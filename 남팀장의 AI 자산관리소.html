@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트 재무의 정석 | 프리미엄 AI 자산관리소</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: radial-gradient(circle at 50% -20%, #1a1f2c 0%, #0a0c10 100%);
+            color: #ffffff;
+            margin: 0;
+            overflow: auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .luxury-card {
+            background: linear-gradient(145deg, rgba(30, 35, 45, 0.8), rgba(15, 18, 25, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            border-radius: 1rem;
+        }
+
+        .luxury-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(196, 164, 106, 0.3);
+        }
+
+        .text-gold-gradient {
+            background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-icon-gradient {
+            background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(232, 213, 181, 0.4));
+            display: inline-block;
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 모달 */
+        #client-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center; z-index: 10000;
+        }
+        #client-modal.active { display: flex; }
+
+        .modal-box {
+            background: linear-gradient(145deg, #1e232d, #0f1219);
+            border: 1px solid rgba(196, 164, 106, 0.25);
+            border-radius: 1.25rem; padding: 2.5rem 3rem; width: 420px; max-width: 90vw;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+        }
+
+        .modal-label { color: #94a3b8; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; display: block; }
+        .modal-input {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: white; border-radius: 0.5rem; padding: 0.7rem 1rem; width: 100%;
+            font-size: 1.05rem; transition: all 0.3s ease; outline: none;
+        }
+        .modal-input:focus { border-color: #c4a46a; box-shadow: 0 0 10px rgba(196,164,106,0.2); }
+
+        .modal-gender-btn {
+            flex: 1; padding: 0.7rem; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 0.5rem;
+            color: #94a3b8; font-size: 1rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .modal-gender-btn:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
+        .modal-gender-btn.sel-male { background: rgba(59,130,246,0.15); border-color: #3b82f6; color: #60a5fa; }
+        .modal-gender-btn.sel-female { background: rgba(244,114,182,0.15); border-color: #f472b6; color: #f472b6; }
+
+        .modal-date-group {
+            display: flex; align-items: center; gap: 0.3rem;
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 0.5rem; padding: 0.7rem 1rem; transition: all 0.3s ease;
+        }
+        .modal-date-group:focus-within { border-color: #c4a46a; box-shadow: 0 0 10px rgba(196,164,106,0.2); }
+        .modal-date-input {
+            background: transparent; border: none; color: white; text-align: center;
+            font-size: 1.05rem; outline: none; padding: 0;
+        }
+        .modal-date-sep { color: #94a3b8; }
+
+        .modal-confirm {
+            width: 100%; padding: 0.85rem;
+            background: linear-gradient(to right, #c4a46a, #e8d5b5); color: #0a0c10;
+            border: none; border-radius: 0.5rem; font-size: 1.05rem; font-weight: 800;
+            cursor: pointer; transition: opacity 0.3s;
+        }
+        .modal-confirm:hover { opacity: 0.85; }
+
+        /* 고객 표시 배지 */
+        .client-badge {
+            display: flex; align-items: center; gap: 0.6rem;
+            background: rgba(196,164,106,0.1); border: 1px solid rgba(196,164,106,0.25);
+            border-radius: 2rem; padding: 0.4rem 1.2rem 0.4rem 0.8rem; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .client-badge:hover { border-color: #c4a46a; background: rgba(196,164,106,0.18); }
+    </style>
+    <script src="consultation-io.js" defer></script>
+</head>
+<body>
+
+    <nav class="w-full px-12 py-10 flex items-center justify-between z-50">
+        <div class="flex items-center gap-2">
+            <img src="logo.png" alt="로고" class="h-11 w-auto object-contain">
+            <div class="flex items-center gap-6">
+                <span class="text-3xl font-extrabold tracking-tight">
+                    스마트 <span class="text-gold-gradient">재무의 정석</span>
+                </span>
+                <div class="h-7 w-[2px] bg-gray-700"></div>
+                <span class="text-[19px] font-semibold text-gray-300 tracking-tight leading-none">
+                    남팀장의 AI 자산관리소
+                </span>
+            </div>
+        </div>
+        <div id="nav-right-group" class="flex items-center gap-3">
+            <div id="client-badge" class="client-badge" onclick="openModal()">
+                <i class="fas fa-user-circle text-xl" style="color:#c4a46a;"></i>
+                <span id="badge-text" class="text-sm font-semibold text-gray-300">고객 정보 입력</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 고객 정보 입력 모달 -->
+    <div id="client-modal" onclick="if(event.target===this)closeModal()">
+        <div class="modal-box">
+            <h3 class="text-xl font-bold mb-6"><i class="fas fa-user-edit" style="color:#c4a46a;"></i> 고객 기본 정보</h3>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="modal-label">고객 성함</label>
+                    <input type="text" id="modal-name" class="modal-input" placeholder="홍길동" maxlength="20">
+                </div>
+
+                <div>
+                    <label class="modal-label">성별</label>
+                    <div class="flex gap-3">
+                        <button type="button" id="modal-male" class="modal-gender-btn" onclick="pickGender('male')">
+                            <i class="fas fa-mars"></i> 남
+                        </button>
+                        <button type="button" id="modal-female" class="modal-gender-btn" onclick="pickGender('female')">
+                            <i class="fas fa-venus"></i> 여
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="modal-label">생년월일</label>
+                    <div class="modal-date-group">
+                        <input type="text" id="modal-byear" class="modal-date-input" style="width:3.5rem;" maxlength="4" placeholder="1985">
+                        <span class="modal-date-sep">.</span>
+                        <input type="text" id="modal-bmonth" class="modal-date-input" style="width:1.8rem;" maxlength="2" placeholder="01">
+                        <span class="modal-date-sep">.</span>
+                        <input type="text" id="modal-bday" class="modal-date-input" style="width:1.8rem;" maxlength="2" placeholder="01">
+                    </div>
+                </div>
+
+                <button onclick="confirmClient()" class="modal-confirm mt-2">
+                    <i class="fas fa-check"></i> 확인
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-grow flex flex-col items-center justify-center px-6 animate-slide-up pb-20">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-light mb-8 leading-tight tracking-tight">
+                당신의 완벽한 은퇴 설계를 위한<br>
+                <span class="font-bold text-gold-gradient">AI 금융 솔루션</span>
+            </h1>
+            <div class="h-[1px] w-24 bg-gradient-to-r from-transparent via-[#e8d5b5] to-transparent mx-auto opacity-60"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full">
+            <div class="luxury-card p-10 flex items-center gap-8 cursor-pointer" onclick="location.href='portfolio.html'">
+                <i class="fas fa-chart-line gold-icon-gradient text-4xl"></i>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3">포트폴리오 리포트</h3>
+                    <p class="text-gray-100 text-sm leading-relaxed font-light opacity-95">자산 증식부터 세금 공제, 목표 배당금 달성까지</p>
+                </div>
+            </div>
+
+            <div class="luxury-card p-10 flex items-center gap-8 cursor-pointer" onclick="location.href='dividend.html'">
+                <i class="fas fa-vault gold-icon-gradient text-4xl"></i>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3">배당투자 가이드</h3>
+                    <p class="text-gray-100 text-sm leading-relaxed font-light opacity-95">현금 흐름 창출을 위한 최적의 배당 자산 분석</p>
+                </div>
+            </div>
+
+            <div class="luxury-card p-10 flex items-center gap-8 cursor-pointer" onclick="location.href='variable_insurance.html'">
+                <i class="fas fa-microchip gold-icon-gradient text-4xl"></i>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3">변액보험 리포트</h3>
+                    <p class="text-gray-100 text-sm leading-relaxed font-light opacity-95">실시간 데이터 기반의 자산 배분 전략</p>
+                </div>
+            </div>
+
+            <div class="luxury-card p-10 flex items-center gap-8 cursor-pointer" onclick="location.href='tax.html'">
+                <i class="fas fa-gavel gold-icon-gradient text-4xl"></i>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-3">투자 상품별 세금 구조</h3>
+                    <p class="text-gray-100 text-sm leading-relaxed font-light opacity-95">수익에 따른 세부 최적화 분석</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let modalGender = '';
+
+        function openModal() {
+            const modal = document.getElementById('client-modal');
+
+            // 항상 빈칸으로 열기
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-byear').value = '';
+            document.getElementById('modal-bmonth').value = '';
+            document.getElementById('modal-bday').value = '';
+            modalGender = '';
+            document.getElementById('modal-male').className = 'modal-gender-btn';
+            document.getElementById('modal-female').className = 'modal-gender-btn';
+
+            modal.classList.add('active');
+            setTimeout(() => document.getElementById('modal-name').focus(), 200);
+        }
+
+        function closeModal() {
+            document.getElementById('client-modal').classList.remove('active');
+        }
+
+        function pickGender(g) {
+            modalGender = g;
+            document.getElementById('modal-male').className = 'modal-gender-btn' + (g === 'male' ? ' sel-male' : '');
+            document.getElementById('modal-female').className = 'modal-gender-btn' + (g === 'female' ? ' sel-female' : '');
+        }
+
+        function confirmClient() {
+            const name = document.getElementById('modal-name').value.trim();
+            const byear = document.getElementById('modal-byear').value.trim();
+            const bmonth = document.getElementById('modal-bmonth').value.trim().padStart(2, '0');
+            const bday = document.getElementById('modal-bday').value.trim().padStart(2, '0');
+
+            if (name) localStorage.setItem('clientName', name);
+            if (modalGender) localStorage.setItem('clientGender', modalGender);
+            if (byear) {
+                const currentYear = new Date().getFullYear();
+                localStorage.setItem('currentAge', currentYear - parseInt(byear) + 1);
+                // 생년월일 원본도 저장 (다른 페이지에서 사용)
+                localStorage.setItem('birthYear', byear);
+                localStorage.setItem('birthMonth', bmonth || '01');
+                localStorage.setItem('birthDay', bday || '01');
+            }
+
+            updateBadge();
+            closeModal();
+        }
+
+        function updateBadge() {
+            const name = localStorage.getItem('clientName');
+            const gender = localStorage.getItem('clientGender');
+            const badge = document.getElementById('badge-text');
+
+            if (name) {
+                const genderIcon = gender === 'male' ? ' <i class="fas fa-mars text-blue-400"></i>' : gender === 'female' ? ' <i class="fas fa-venus text-pink-400"></i>' : '';
+                badge.innerHTML = name + ' 님' + genderIcon;
+            } else {
+                badge.textContent = '고객 정보 입력';
+            }
+        }
+
+        // 날짜 입력 숫자만 + 자동 포커스
+        ['modal-byear', 'modal-bmonth', 'modal-bday'].forEach((id, idx, arr) => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (this.value.length >= parseInt(this.maxLength) && idx < arr.length - 1) {
+                    document.getElementById(arr[idx + 1]).focus();
+                }
+            });
+            el.addEventListener('click', function() { this.select(); });
+        });
+
+        // 페이지 로드 시: 이전 상담 데이터 전부 초기화 + 배지 리셋
+        document.addEventListener('DOMContentLoaded', () => {
+            // 상담 관련 localStorage 키 모두 삭제
+            const keysToClean = [
+                'clientName', 'clientGender', 'currentAge', 'retireAge',
+                'birthYear', 'birthMonth', 'birthDay',
+                'initialCapital', 'monthlyAdd',
+                'dividendYield', 'annualReturn', 'profitThreshold',
+                'targetAsset', 'targetDividend',
+                'calc_monthly', 'calc_start_age', 'calc_life_age', 'calc_return_rate'
+            ];
+            keysToClean.forEach(k => localStorage.removeItem(k));
+
+            document.getElementById('badge-text').textContent = '고객 정보 입력';
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>필요 배당 계산 결과</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap');
+        
+        body { font-family: 'Pretendard', sans-serif; background: #0a0c10; color: #ffffff; margin: 0; height: 100vh; display: flex; flex-direction: row; overflow: hidden; }
+
+        /* 사이드바 스타일 유지 */
+        .sidebar { width: 400px; background: #11141a; border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; shrink-0; position: relative; padding: 2.5rem; }
+        .btn-home { position: absolute; top: 2rem; right: 2rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.6rem 1.25rem; border-radius: 9999px; font-size: 1rem; font-weight: 700; color: #ffffff; display: flex; align-items: center; gap: 0.5rem; z-index: 10; cursor: pointer; transition: all 0.3s; }
+        .btn-home:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); }
+        
+        .text-gold-gradient { background: linear-gradient(to right, #c4a46a, #e8d5b5, #c4a46a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gold-icon-gradient { background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; }
+
+        .input-group { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 0.5rem; display: flex; flex-direction: column; margin-bottom: 0.75rem; transition: all 0.3s; }
+        .input-group:focus-within { border-color: #c4a46a; box-shadow: 0 0 10px rgba(196, 164, 106, 0.1); }
+        .input-label { font-size: 0.85rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.5rem; }
+        .input-field { background: transparent; border: none; color: #ffffff; font-size: 1.25rem; font-weight: 800; width: 100%; outline: none; text-align: right; appearance: none; -moz-appearance: textfield; }
+
+        .btn-retry { background: #00c08b; color: #0a0c10; font-weight: 900; transition: 0.3s; cursor: pointer; border: none; }
+        .btn-retry:hover { background: #00d99d; transform: translateY(-1px); }
+        
+        .icon-gold { 
+            background: linear-gradient(135deg, #c4a46a 0%, #e8d5b5 50%, #c4a46a 100%); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin-right: 6px;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+        }
+
+        /* 2-3페이지와 동일한 규격 적용 */
+        .result-card { 
+            background: linear-gradient(145deg, rgba(30, 35, 45, 0.4), rgba(15, 18, 25, 0.6));
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 2rem; 
+            padding: 3rem 5rem; 
+            max-width: 1000px; 
+            width: 95%; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            word-break: keep-all; 
+        }
+
+        .result-title { font-size: 1.75rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.02em; }
+        .result-value { font-size: 4.5rem; font-weight: 900; margin-bottom: 2rem; tracking: -0.03em; }
+        .result-text { font-size: 1.15rem; line-height: 1.7; color: #d1d5db; }
+
+        .justify-content {
+            text-align: justify;
+            text-justify: inter-character;
+        }
+    </style>
+    <script src="consultation-io.js" defer></script>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <button onclick="location.href='dividend.html'" class="btn-home">
+            <i class="fas fa-home gold-icon-gradient"></i> 메인으로
+        </button>
+
+        <header class="mt-16 mb-10">
+            <span class="text-gold-gradient font-bold tracking-widest text-[11px] uppercase block mb-2">RESULT</span>
+            <h1 class="text-2xl font-bold text-white">필요 배당 결과 분석</h1>
+        </header>
+
+        <div class="flex-grow overflow-y-auto pr-1">
+            <div class="input-group border-l-4 border-l-[#c4a46a]">
+                <label class="input-label">매달 받고 싶은 목표액 (원)</label>
+                <input type="text" id="input-monthly" class="input-field" oninput="formatComma(this); calculateRequiredAsset();">
+            </div>
+            <div class="input-group">
+                <label class="input-label">은퇴 시점 나이 (세)</label>
+                <input type="number" id="input-start-age" class="input-field" oninput="calculateRequiredAsset();">
+            </div>
+            <div class="input-group">
+                <label class="input-label">예상 연 배당률 (%)</label>
+                <input type="number" id="input-rate" class="input-field" step="0.01" oninput="calculateRequiredAsset();">
+            </div>
+        </div>
+
+        <footer class="mt-auto pt-10 flex gap-4">
+            <button onclick="location.href='dividend2-3.html'" class="px-6 py-4 bg-white/10 text-gray-300 font-bold rounded-lg hover:bg-white/20 hover:text-white transition-all">이전</button>
+            <button onclick="saveAndGoToStep1()" class="flex-grow py-4 btn-retry rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,192,139,0.2)]">
+                <i class="fas fa-redo-alt text-sm icon-gold"></i> 다시 계산하기
+            </button>
+        </footer>
+    </aside>
+
+    <div class="flex-grow flex flex-col overflow-hidden bg-[#0a0c10] relative">
+        <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 50% 40%, rgba(196, 164, 106, 0.3) 0%, transparent 60%);"></div>
+        
+        <header class="px-10 py-6 border-b border-white/10 bg-[#11141a] relative z-10">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-[#161b22] rounded-full flex items-center justify-center border border-white/10"><i class="fas fa-bullseye gold-icon-gradient text-lg"></i></div>
+                <h2 class="text-2xl font-black text-gold-gradient tracking-tighter">목표 달성 필요 자금 분석</h2>
+            </div>
+        </header>
+
+        <main class="flex-grow flex items-center justify-center p-12 relative z-10">
+            <div class="result-card text-center">
+                <div class="w-14 h-14 bg-[#161b22] rounded-full flex items-center justify-center mb-6 mx-auto border border-white/5">
+                    <i class="fas fa-landmark gold-icon-gradient text-xl"></i>
+                </div>
+                
+                <h3 class="result-title text-gray-400">은퇴 시점에 준비해야 할 원금</h3>
+                <div id="required-asset" class="result-value text-white tracking-tight">0원</div>
+                
+                <div class="justify-content space-y-5 result-text border-t border-white/10 pt-8">
+                    <p>
+                        매월 <span class="text-blue-400 font-black" id="sum-monthly">0원</span>씩 
+                        만 <span class="text-white font-black" id="sum-start">0세</span>부터 평생(100세 기준) 
+                        수령하려면, 연 배당률 <span class="text-emerald-400 font-bold" id="sum-rate">0</span>% 가정 시 위와 같은 자산 규모가 필요합니다.
+                    </p>
+                    <p>
+                        이 분석은 자산을 단순히 소진하는 방식이 아닌, <strong class="text-white">자본 소득을 통한 지속 가능한 은퇴 생활</strong> 설계를 목적으로 합니다. 정기적인 포트폴리오 점검을 통해 안정적인 현금흐름을 유지하세요.
+                    </p>
+                    <p class="text-base text-gray-500 pt-4 text-center">
+                        입력하신 데이터를 바탕으로 생성된 <span class="text-white font-bold">나만의 맞춤형 배당 리포트</span> 분석 결과입니다.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const formatLargeKRW = (num) => {
+            let n = Math.floor(num); if (n <= 0) return '0원';
+            const uk = Math.floor(n / 100000000);
+            const man = Math.floor((n % 100000000) / 10000);
+            let res = ''; 
+            if (uk > 0) res += uk.toLocaleString() + '억 '; 
+            if (man > 0) res += man.toLocaleString() + '만 ';
+            return (res.trim() || '0') + '원';
+        };
+
+        function formatComma(el) {
+            let val = el.value.replace(/[^0-9]/g, '');
+            el.value = val ? Number(val).toLocaleString('ko-KR') : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const monthly = localStorage.getItem('calc_monthly') || '3000000';
+            const startAge = localStorage.getItem('calc_start_age') || '65';
+            const rate = localStorage.getItem('calc_return_rate') || '6.00';
+
+            document.getElementById('input-monthly').value = Number(monthly).toLocaleString('ko-KR');
+            document.getElementById('input-start-age').value = startAge;
+            document.getElementById('input-rate').value = rate;
+
+            calculateRequiredAsset();
+        });
+
+        function calculateRequiredAsset() {
+            const pmt = Number(document.getElementById('input-monthly').value.replace(/[^0-9]/g, '')) || 0;
+            const startAge = Number(document.getElementById('input-start-age').value) || 0;
+            const lifeExpectancy = 100;
+            const returnRate = Number(document.getElementById('input-rate').value) || 0;
+
+            const years = lifeExpectancy - startAge;
+            const n = years * 12; 
+            const r = (returnRate / 100) / 12; 
+
+            let requiredAsset = 0;
+            if (n > 0 && pmt > 0) {
+                if (r === 0) requiredAsset = pmt * n;
+                else requiredAsset = pmt * ((1 - Math.pow(1 + r, -n)) / r);
+            }
+
+            document.getElementById('required-asset').innerText = formatLargeKRW(requiredAsset);
+            
+            const displayMonthly = pmt >= 10000 ? Math.floor(pmt / 10000).toLocaleString() + '만' : pmt.toLocaleString();
+            document.getElementById('sum-monthly').innerText = displayMonthly + '원';
+            document.getElementById('sum-start').innerText = startAge + '세';
+            document.getElementById('sum-rate').innerText = returnRate;
+        }
+
+        function saveAndGoToStep1() {
+            const pmt = document.getElementById('input-monthly').value.replace(/[^0-9]/g, '');
+            const startAge = document.getElementById('input-start-age').value;
+            const rate = document.getElementById('input-rate').value;
+
+            localStorage.setItem('calc_monthly', pmt);
+            localStorage.setItem('calc_start_age', startAge);
+            localStorage.setItem('calc_return_rate', rate);
+
+            location.href = 'dividend2-1.html';
+        }
+    </script>
+</body>
+</html>
